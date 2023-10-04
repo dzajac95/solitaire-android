@@ -1,0 +1,57 @@
+[
+{
+  "directory": "/home/dzajac/projects/solitaire-android/app/.cxx/Debug/1y4d5513/arm64-v8a",
+  "command": "/home/dzajac/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android30 --sysroot=/home/dzajac/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot -DDEBUG -DPLATFORM_ANDROID -D_DEBUG -Dsolitaire_EXPORTS -I/home/dzajac/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue -I/home/dzajac/projects/solitaire-android/app/src/main/cpp/deps/raylib -I/home/dzajac/projects/solitaire-android/app/src/main/cpp/deps/raymob -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -g -fno-limit-debug-info -fPIC -std=gnu99 -o CMakeFiles/solitaire.dir/main.c.o -c /home/dzajac/projects/solitaire-android/app/src/main/cpp/main.c",
+  "file": "/home/dzajac/projects/solitaire-android/app/src/main/cpp/main.c"
+},
+{
+  "directory": "/home/dzajac/projects/solitaire-android/app/.cxx/Debug/1y4d5513/arm64-v8a",
+  "command": "/home/dzajac/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android30 --sysroot=/home/dzajac/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot -DDEBUG -DPLATFORM_ANDROID -D_DEBUG -Dsolitaire_EXPORTS -I/home/dzajac/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue -I/home/dzajac/projects/solitaire-android/app/src/main/cpp/deps/raylib -I/home/dzajac/projects/solitaire-android/app/src/main/cpp/deps/raymob -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -g -fno-limit-debug-info -fPIC -std=gnu99 -o CMakeFiles/solitaire.dir/home/dzajac/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue/android_native_app_glue.c.o -c /home/dzajac/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue/android_native_app_glue.c",
+  "file": "/home/dzajac/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue/android_native_app_glue.c"
+},
+{
+  "directory": "/home/dzajac/projects/solitaire-android/app/.cxx/Debug/1y4d5513/arm64-v8a",
+  "command": "/home/dzajac/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android30 --sysroot=/home/dzajac/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot -DGRAPHICS_API_OPENGL_ES2 -DMAL_NO_OSS -DPLATFORM_ANDROID -D__ANDROID__ -I/home/dzajac/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -fno-limit-debug-info  -fPIC -std=gnu99 -o deps/raylib/CMakeFiles/raylib.dir/rcore.c.o -c /home/dzajac/projects/solitaire-android/app/src/main/cpp/deps/raylib/rcore.c",
+  "file": "/home/dzajac/projects/solitaire-android/app/src/main/cpp/deps/raylib/rcore.c"
+},
+{
+  "directory": "/home/dzajac/projects/solitaire-android/app/.cxx/Debug/1y4d5513/arm64-v8a",
+  "command": "/home/dzajac/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android30 --sysroot=/home/dzajac/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot -DGRAPHICS_API_OPENGL_ES2 -DMAL_NO_OSS -DPLATFORM_ANDROID -D__ANDROID__ -I/home/dzajac/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -fno-limit-debug-info  -fPIC -std=gnu99 -o deps/raylib/CMakeFiles/raylib.dir/rmodels.c.o -c /home/dzajac/projects/solitaire-android/app/src/main/cpp/deps/raylib/rmodels.c",
+  "file": "/home/dzajac/projects/solitaire-android/app/src/main/cpp/deps/raylib/rmodels.c"
+},
+{
+  "directory": "/home/dzajac/projects/solitaire-android/app/.cxx/Debug/1y4d5513/arm64-v8a",
+  "command": "/home/dzajac/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android30 --sysroot=/home/dzajac/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot -DGRAPHICS_API_OPENGL_ES2 -DMAL_NO_OSS -DPLATFORM_ANDROID -D__ANDROID__ -I/home/dzajac/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -fno-limit-debug-info  -fPIC -std=gnu99 -o deps/raylib/CMakeFiles/raylib.dir/rshapes.c.o -c /home/dzajac/projects/solitaire-android/app/src/main/cpp/deps/raylib/rshapes.c",
+  "file": "/home/dzajac/projects/solitaire-android/app/src/main/cpp/deps/raylib/rshapes.c"
+},
+{
+  "directory": "/home/dzajac/projects/solitaire-android/app/.cxx/Debug/1y4d5513/arm64-v8a",
+  "command": "/home/dzajac/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android30 --sysroot=/home/dzajac/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot -DGRAPHICS_API_OPENGL_ES2 -DMAL_NO_OSS -DPLATFORM_ANDROID -D__ANDROID__ -I/home/dzajac/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -fno-limit-debug-info  -fPIC -std=gnu99 -o deps/raylib/CMakeFiles/raylib.dir/rtext.c.o -c /home/dzajac/projects/solitaire-android/app/src/main/cpp/deps/raylib/rtext.c",
+  "file": "/home/dzajac/projects/solitaire-android/app/src/main/cpp/deps/raylib/rtext.c"
+},
+{
+  "directory": "/home/dzajac/projects/solitaire-android/app/.cxx/Debug/1y4d5513/arm64-v8a",
+  "command": "/home/dzajac/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android30 --sysroot=/home/dzajac/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot -DGRAPHICS_API_OPENGL_ES2 -DMAL_NO_OSS -DPLATFORM_ANDROID -D__ANDROID__ -I/home/dzajac/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -fno-limit-debug-info  -fPIC -std=gnu99 -o deps/raylib/CMakeFiles/raylib.dir/rtextures.c.o -c /home/dzajac/projects/solitaire-android/app/src/main/cpp/deps/raylib/rtextures.c",
+  "file": "/home/dzajac/projects/solitaire-android/app/src/main/cpp/deps/raylib/rtextures.c"
+},
+{
+  "directory": "/home/dzajac/projects/solitaire-android/app/.cxx/Debug/1y4d5513/arm64-v8a",
+  "command": "/home/dzajac/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android30 --sysroot=/home/dzajac/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot -DGRAPHICS_API_OPENGL_ES2 -DMAL_NO_OSS -DPLATFORM_ANDROID -D__ANDROID__ -I/home/dzajac/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -fno-limit-debug-info  -fPIC -std=gnu99 -o deps/raylib/CMakeFiles/raylib.dir/raudio.c.o -c /home/dzajac/projects/solitaire-android/app/src/main/cpp/deps/raylib/raudio.c",
+  "file": "/home/dzajac/projects/solitaire-android/app/src/main/cpp/deps/raylib/raudio.c"
+},
+{
+  "directory": "/home/dzajac/projects/solitaire-android/app/.cxx/Debug/1y4d5513/arm64-v8a",
+  "command": "/home/dzajac/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android30 --sysroot=/home/dzajac/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot -DGRAPHICS_API_OPENGL_ES2 -DMAL_NO_OSS -DPLATFORM_ANDROID -D__ANDROID__ -I/home/dzajac/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -fno-limit-debug-info  -fPIC -std=gnu99 -o deps/raylib/CMakeFiles/raylib.dir/utils.c.o -c /home/dzajac/projects/solitaire-android/app/src/main/cpp/deps/raylib/utils.c",
+  "file": "/home/dzajac/projects/solitaire-android/app/src/main/cpp/deps/raylib/utils.c"
+},
+{
+  "directory": "/home/dzajac/projects/solitaire-android/app/.cxx/Debug/1y4d5513/arm64-v8a",
+  "command": "/home/dzajac/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android30 --sysroot=/home/dzajac/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot -DPLATFORM_ANDROID -I/home/dzajac/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue -I/home/dzajac/projects/solitaire-android/app/src/main/cpp/deps/raylib -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -fno-limit-debug-info  -fPIC -std=gnu99 -o deps/raymob/CMakeFiles/raymoblib.dir/helper.c.o -c /home/dzajac/projects/solitaire-android/app/src/main/cpp/deps/raymob/helper.c",
+  "file": "/home/dzajac/projects/solitaire-android/app/src/main/cpp/deps/raymob/helper.c"
+},
+{
+  "directory": "/home/dzajac/projects/solitaire-android/app/.cxx/Debug/1y4d5513/arm64-v8a",
+  "command": "/home/dzajac/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android30 --sysroot=/home/dzajac/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot -DPLATFORM_ANDROID -I/home/dzajac/Android/Sdk/ndk/25.1.8937393/sources/android/native_app_glue -I/home/dzajac/projects/solitaire-android/app/src/main/cpp/deps/raylib -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -fno-limit-debug-info  -fPIC -std=gnu99 -o deps/raymob/CMakeFiles/raymoblib.dir/features.c.o -c /home/dzajac/projects/solitaire-android/app/src/main/cpp/deps/raymob/features.c",
+  "file": "/home/dzajac/projects/solitaire-android/app/src/main/cpp/deps/raymob/features.c"
+}
+]
