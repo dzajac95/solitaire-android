@@ -149,6 +149,33 @@ Texture2D LoadTextureFromAndroid(AAssetManager *assman, const char *filePath) {
     return tex;
 }
 
+Texture2D cardTextures[14][4];
+void loadTextures(AAssetManager *assman) {
+    //   all number card textures
+    char texName[BUF_SIZE];
+    for (int cardNum = 2; cardNum < 11; cardNum++) {
+        for (enum suit suit = 0; suit < SUIT_COUNT; suit++) {
+            snprintf(texName, BUF_SIZE, "playing-cards/%d_of_%s.png", cardNum, suitNames[suit]);
+            cardTextures[cardNum][suit] = LoadTextureFromAndroid(assman, texName);
+        }
+    }
+
+    //   all face card textures
+    //     Ace
+    for (int suit = 0; suit < SUIT_COUNT; suit++) {
+        snprintf(texName, BUF_SIZE, "playing-cards/ace_of_%s.png", suitNames[suit]);
+        cardTextures[FACE_ACE][suit] = LoadTextureFromAndroid(assman, texName);
+    }
+    //     Jack, Queen, King
+    for (int cardNum = FACE_JACK; cardNum <= FACE_KING; cardNum++) {
+        for (int suit = 0; suit < SUIT_COUNT; suit++) {
+            snprintf(texName, BUF_SIZE, "playing-cards/%s_of_%s.png", faceNames[cardNum], suitNames[suit]);
+            LOG_DEBUG("Trying to load tex from file: %s", texName);
+            cardTextures[cardNum][suit] = LoadTextureFromAndroid(assman, texName);
+        }
+    }
+}
+
 #define CARD_SCALE 0.5f
 #define TARGET_FPS 60
 #define TABLEAU_PAD 0.01f
@@ -209,7 +236,6 @@ int main(void)
     // Loading Textures
     //--------------------------------------------------------------------------------------
     AAssetManager *assman = app->activity->assetManager;
-    Texture2D cardTextures[14][4];
     //   card back
     Image image = ImageFromAndroid(assman, "playing-cards/card_back.png");
     Texture2D cardBackTex = LoadTextureFromImage(image);
@@ -217,30 +243,7 @@ int main(void)
     int card_height = image.height;
     UnloadImage(image);
 
-    //   all number card textures
-    char texName[BUF_SIZE];
-    for (int cardNum = 2; cardNum < 11; cardNum++) {
-        for (enum suit suit = 0; suit < SUIT_COUNT; suit++) {
-            snprintf(texName, BUF_SIZE, "playing-cards/%d_of_%s.png", cardNum, suitNames[suit]);
-            cardTextures[cardNum][suit] = LoadTextureFromAndroid(assman, texName);
-        }
-    }
-
-    //   all face card textures
-    //     Ace
-    for (int suit = 0; suit < SUIT_COUNT; suit++) {
-        snprintf(texName, BUF_SIZE, "playing-cards/ace_of_%s.png", suitNames[suit]);
-        cardTextures[FACE_ACE][suit] = LoadTextureFromAndroid(assman, texName);
-    }
-    //     Jack, Queen, King
-    for (int cardNum = FACE_JACK; cardNum <= FACE_KING; cardNum++) {
-        for (int suit = 0; suit < SUIT_COUNT; suit++) {
-            snprintf(texName, BUF_SIZE, "playing-cards/%s_of_%s.png", faceNames[cardNum], suitNames[suit]);
-            LOG_DEBUG("Trying to load tex from file: %s", texName);
-            cardTextures[cardNum][suit] = LoadTextureFromAndroid(assman, texName);
-        }
-    }
-
+    loadTextures(assman);
     //--------------------------------------------------------------------------------------
 
     float card_width_percent = (1.0 - TABLEAU_PAD*6 - TABLEAU_MARGIN*2) / 7;
