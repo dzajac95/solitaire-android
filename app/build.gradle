@@ -13,7 +13,7 @@ android {
     compileSdk 33
 
     defaultConfig {
-        minSdk 24
+        minSdk 30
         targetSdk 33
 
         applicationId project.properties['app.application_id']

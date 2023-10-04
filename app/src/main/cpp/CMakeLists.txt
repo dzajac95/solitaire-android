@@ -8,6 +8,7 @@ cmake_minimum_required(VERSION 3.22.1)
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_CXX_STANDARD 11)
 
+message(ANDROID_NDK="${ANDROID_NDK}")
 # Set the project name based on the name given on the gradle.properties
 project("${APP_LIB_NAME}")
 
@@ -46,4 +47,9 @@ target_include_directories(${APP_LIB_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/deps/ray
 target_include_directories(${APP_LIB_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/deps/raymob")
 
 # Link required libraries to the native application
-target_link_libraries(${APP_LIB_NAME} raylib raymoblib)
+target_link_libraries(${APP_LIB_NAME}
+    raylib
+    raymoblib
+    android
+    jnigraphics
+    )
