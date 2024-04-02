@@ -38,6 +38,12 @@
 #define LOG_INFO(...) do { __android_log_print(ANDROID_LOG_INFO, MY_LOG_TAG, __VA_ARGS__); } while(0)
 #define LOG_DEBUG(...) do { __android_log_print(ANDROID_LOG_DEBUG, MY_LOG_TAG, __VA_ARGS__); } while(0)
 
+#define TARGET_FPS 60
+#define TABLEAU_PAD 0.008f
+#define TABLEAU_MARGIN 0.012f
+#define TABLEAU_Y_START 0.25f
+#define TABLEAU_TOP_MARGIN 0.02f
+
 enum face {
     FACE_ACE = 1,
     FACE_JACK = 11,
@@ -77,6 +83,22 @@ typedef struct {
     int count;
 } Pile;
 
+void pile_append(Pile *pile, Card card) {
+    assert(pile->count < 52);
+    pile->cards[pile->count++] = card;
+}
+
+Card pile_pop(Pile *pile) {
+    assert(pile->count > 0);
+    return pile->cards[--pile->count];
+}
+
+Card pile_peek(const Pile *pile) {
+    assert(pile->count > 0);
+    int idx = pile->count - 1;
+    return pile->cards[idx];
+}
+
 typedef struct {
     Pile tableau[7];
     Pile foundation[4];
@@ -84,15 +106,18 @@ typedef struct {
     Pile reserve;
 } Game;
 
-void pile_append(Pile *pile, Card card) {
-    assert(pile->count < 52-1);
-    pile->cards[pile->count++] = card;
-}
+// Global state
+static Game game = {0};
+static Texture2D cardTextures[14][4];
+static Texture2D cardBack;
 
-Card pile_pop(Pile *pile) {
-    assert(pile->count > 0);
-    return pile->cards[pile->count--];
-}
+// useful global vars
+static int card_width_px;
+static int card_height_px;
+static float card_width;
+static float card_height;
+static float card_scale;
+static Vector2 screen_dim;
 
 Image ImageFromAndroid(AAssetManager *assman, const char *filePath) {
     // Get the image from asset manager
@@ -149,7 +174,6 @@ Texture2D LoadTextureFromAndroid(AAssetManager *assman, const char *filePath) {
     return tex;
 }
 
-Texture2D cardTextures[14][4];
 void loadTextures(AAssetManager *assman) {
     //   all number card textures
     char texName[BUF_SIZE];
@@ -174,15 +198,47 @@ void loadTextures(AAssetManager *assman) {
             cardTextures[cardNum][suit] = LoadTextureFromAndroid(assman, texName);
         }
     }
+    //   card back
+    Image image = ImageFromAndroid(assman, "playing-cards/card_back.png");
+    cardBack = LoadTextureFromImage(image);
+    card_width_px = image.width;
+    card_height_px = image.height;
+    UnloadImage(image);
 }
 
-#define CARD_SCALE 0.5f
-#define TARGET_FPS 60
-#define TABLEAU_PAD 0.01f
-#define TABLEAU_MARGIN 0.025f
+void renderTableau()
+{
+    Vector2 root_pos = {TABLEAU_MARGIN, TABLEAU_Y_START};
+    for (size_t i = 0; i < 7; i++) {
+        Pile p = game.tableau[i];
+        size_t j;
+        Vector2 card_pos = {root_pos.x + i*(card_width+TABLEAU_PAD), root_pos.y};
+        if (p.count > 0) {
+            for (j = 0; j < p.count-1; j++) {
+                DrawTextureEx(cardBack, Vector2Multiply(card_pos, screen_dim), 0.0f, card_scale, WHITE);
+                card_pos.y += card_height*0.15;
+            }
+            Card c = pile_peek(&p);
+            DrawTextureEx(cardTextures[c.value][c.suit], Vector2Multiply(card_pos, screen_dim), 0.0f, card_scale, WHITE);
+        }
+    }
+}
 
-// Game state
-Game game = {0};
+void renderFoundation(void)
+{
+    Vector2 root_pos = {TABLEAU_MARGIN, TABLEAU_Y_START-(card_height+TABLEAU_TOP_MARGIN)};
+    for (size_t i = 0; i < 4; i++) {
+        Pile p = game.foundation[i];
+        Vector2 card_pos = {root_pos.x + i*(card_width+TABLEAU_PAD), root_pos.y};
+        if (p.count > 0) {
+            Card c = pile_peek(&p);
+            DrawTextureEx(cardTextures[c.value][c.suit], Vector2Multiply(card_pos, screen_dim), 0.0f, card_scale, WHITE);
+        } else {
+            Vector2 size = {card_width * screen_dim.x, card_height * screen_dim.y};
+            DrawRectangleV(Vector2Multiply(card_pos, screen_dim), size, RED);
+        }
+    }
+}
 
 //------------------------------------------------------------------------------------
 // Program main entry point
@@ -193,7 +249,7 @@ int main(void)
     //--------------------------------------------------------------------------------------
     InitWindow(0, 0, "raylib [core] example - basic window");
     SetTargetFPS(TARGET_FPS);   // Set our game to run at 60 frames-per-second
-    const Vector2 screenDim = {GetScreenWidth(), GetScreenHeight()};
+    screen_dim = (Vector2) {GetScreenWidth(), GetScreenHeight()};
     struct android_app *app = GetAndroidApp();
     //--------------------------------------------------------------------------------------
 
@@ -204,11 +260,11 @@ int main(void)
     // Init deck
     for (int i = 0; i < 13; i++) {
         for (int j = 0; j < SUIT_COUNT; j++) {
-            deck.cards[j*SUIT_COUNT+i] = (Card){
+            Card c = {
                 .value = i+1,
                 .suit = j,
             };
-            deck.count += 1;
+            pile_append(&deck, c);
         }
     }
 
@@ -236,55 +292,42 @@ int main(void)
     // Loading Textures
     //--------------------------------------------------------------------------------------
     AAssetManager *assman = app->activity->assetManager;
-    //   card back
-    Image image = ImageFromAndroid(assman, "playing-cards/card_back.png");
-    Texture2D cardBackTex = LoadTextureFromImage(image);
-    int card_width = image.width;
-    int card_height = image.height;
-    UnloadImage(image);
-
     loadTextures(assman);
     //--------------------------------------------------------------------------------------
 
-    float card_width_percent = (1.0 - TABLEAU_PAD*6 - TABLEAU_MARGIN*2) / 7;
-    int card_width_desired_px = (int) (card_width_percent * screenDim.x);
-    float card_scale = (float) card_width_desired_px / card_width;
-    int card_width_scaled = card_width * card_scale;
-    int card_height_scaled = card_height * card_scale;
+    card_width = (1.0 - TABLEAU_PAD*6 - TABLEAU_MARGIN*2) / 7;
+    int card_width_desired_px = (int) (card_width * screen_dim.x);
+    card_scale = (float) card_width_desired_px / card_width_px;
+    int card_width_scaled = card_width_px * card_scale;
+    int card_height_scaled = card_height_px * card_scale;
+    card_height = card_height_scaled / screen_dim.y;
 
     bool grabbed = false;
     int hold_frame_count = 0;
-    Vector2 touch_pos_screen;
     Vector2 touch_pos;
-    Vector2 pos = {0.5, 0.5};
-    Vector2 pos_screen = Vector2Multiply(pos, screenDim);
-    Rectangle collisionBox = {
-            .x = pos_screen.x,
-            .y = pos_screen.y,
-            .width = card_width_scaled,
-            .height = card_height_scaled,
-    };
+    Vector2 pos = {0.5-(card_width/2), 0.5-(card_height/2)};
 
+    Rectangle collisionBox;
     // Main game loop
     while (!WindowShouldClose())    // Detect window close button or ESC key
     {
         // Update
         //----------------------------------------------------------------------------------
         collisionBox = (Rectangle){
-                .x = pos_screen.x,
-                .y = pos_screen.y,
-                .width = card_width_scaled,
-                .height = card_height_scaled,
+                .x = pos.x,
+                .y = pos.y,
+                .width = card_width,
+                .height = card_height,
         };
         //----------------------------------------------------------------------------------
 
         // Handle Input
         //----------------------------------------------------------------------------------
-        touch_pos_screen = GetTouchPosition(0);
+        touch_pos = Vector2Divide(GetTouchPosition(0), screen_dim);
         if (IsMouseButtonPressed(0)) {
             LOG_DEBUG("Pressed!");
         }
-        if (IsMouseButtonDown(0) && CheckCollisionPointRec(touch_pos_screen, collisionBox)) {
+        if (IsMouseButtonDown(0) && CheckCollisionPointRec(touch_pos, collisionBox)) {
             LOG_INFO("YAY! WE'RE TOUCHING :) %d", hold_frame_count);
             hold_frame_count += 1;
         }
@@ -292,7 +335,6 @@ int main(void)
             LOG_DEBUG("RELEASED!");
             hold_frame_count = 0;
             grabbed = false;
-            pos = Vector2Divide(touch_pos_screen, screenDim);
         }
         if (hold_frame_count > 10) {
             grabbed = true;
@@ -306,22 +348,25 @@ int main(void)
         ClearBackground(DARKGREEN);
 
         DrawText("Welcome to Solitaire!", 190, 200, 32, RAYWHITE);
-        // Render tableau
-        Vector2 root_pos = {TABLEAU_MARGIN, 0.2};
-        for (int i = 0; i < 7; i++) {
-            Vector2 card_pos = {root_pos.x + i*(card_width_percent+TABLEAU_PAD), root_pos.y};
-            DrawTextureEx(cardTextures[i+2][CLUBS], Vector2Multiply(card_pos, screenDim), 0.0f, card_scale, WHITE);
-        }
 
-        // Render grabbed card
-        pos_screen = Vector2Multiply(pos, screenDim);
+        renderTableau();
+
+        // reserve
+        Vector2 card_pos = {1.0 - card_width - TABLEAU_MARGIN, TABLEAU_Y_START-(card_height+TABLEAU_TOP_MARGIN)};
+        DrawTextureEx(cardBack, Vector2Multiply(card_pos, screen_dim), 0.0f, card_scale, WHITE);
+
+        renderFoundation();
+
+        // grabbed card
         if (grabbed) {
-            Vector2 new_pos_screen = Vector2Subtract(touch_pos_screen, (Vector2){card_width_scaled/2.0, (4.0/4.0)*card_height_scaled});
-            Vector2 new_pos = Vector2Divide(new_pos_screen, screenDim);
-            DrawTextureEx(cardBackTex, new_pos_screen, 0.0f, card_scale, WHITE);
+            Vector2 new_pos = {
+                .x = touch_pos.x - card_width/2,
+                .y = touch_pos.y - card_height/2
+            };
+            DrawTextureEx(cardBack, Vector2Multiply(new_pos, screen_dim), 0.0f, card_scale, WHITE);
             pos = new_pos;
         } else {
-            DrawTextureEx(cardBackTex, pos_screen, 0.0f, card_scale, WHITE);
+            DrawTextureEx(cardBack, Vector2Multiply(pos, screen_dim), 0.0f, card_scale, WHITE);
         }
 
         EndDrawing();
@@ -337,7 +382,6 @@ int main(void)
         }
     }
     CloseWindow();        // Close window and OpenGL context
-    /* UnloadTexture(cardBackTex); */ // Do I need to do something like this?
     //--------------------------------------------------------------------------------------
 
     return 0;
