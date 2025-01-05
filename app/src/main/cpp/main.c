@@ -17,13 +17,12 @@
 *
 ********************************************************************************************/
 
-#include <android/asset_manager.h>
-#include <android/imagedecoder.h>
 #include <android/log.h>
 #include <android/input.h>
 
 #include "raylib.h"
 #include "raymath.h"
+#include "raymob.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -233,68 +232,13 @@ bool getMoveTarget(Card c, InFlightPile *in_flight)
     return false;
 }
 
-Image ImageFromAndroid(AAssetManager *assman, const char *filePath) {
-    // Get the image from asset manager
-    AAsset *pAndroidImage = AAssetManager_open(
-            assman,
-            filePath,
-            AASSET_MODE_BUFFER);
-
-    // Make a decoder to turn it into a texture
-    AImageDecoder *pAndroidDecoder = NULL;
-    int result = AImageDecoder_createFromAAsset(pAndroidImage, &pAndroidDecoder);
-    assert(result == ANDROID_IMAGE_DECODER_SUCCESS);
-
-    // make sure we get 8 bits per channel out. RGBA order.
-    AImageDecoder_setAndroidBitmapFormat(pAndroidDecoder, ANDROID_BITMAP_FORMAT_RGBA_8888);
-
-    // Get the image header, to help set everything up
-    const AImageDecoderHeaderInfo *pAndroidHeader = NULL;
-    pAndroidHeader = AImageDecoder_getHeaderInfo(pAndroidDecoder);
-
-    // important metrics for sending to GL
-    int32_t width = AImageDecoderHeaderInfo_getWidth(pAndroidHeader);
-    int32_t height = AImageDecoderHeaderInfo_getHeight(pAndroidHeader);
-    size_t stride = AImageDecoder_getMinimumStride(pAndroidDecoder);
-
-    // Get the bitmap data of the image
-    int buf_size = height * stride;
-    uint8_t *imageData = malloc(buf_size);
-    int decodeResult = AImageDecoder_decodeImage(
-            pAndroidDecoder,
-            imageData,
-            stride,
-            buf_size);
-    assert(decodeResult == ANDROID_IMAGE_DECODER_SUCCESS);
-
-    // Cleanup helpers
-    AImageDecoder_delete(pAndroidDecoder);
-    AAsset_close(pAndroidImage);
-
-    Image image = {
-        .data = imageData,
-        .height = height,
-        .width = width,
-        .mipmaps = 1,
-        .format = PIXELFORMAT_UNCOMPRESSED_R8G8B8A8,
-    };
-    return image;
-}
-
-Texture2D LoadTextureFromAndroid(AAssetManager *assman, const char *filePath) {
-    Image image = ImageFromAndroid(assman, filePath);
-    Texture2D tex = LoadTextureFromImage(image);
-    UnloadImage(image);
-    return tex;
-}
-
-void loadTextures(AAssetManager *assman) {
+void loadTextures() {
     //   all number card textures
     char texName[BUF_SIZE];
     for (int cardNum = 2; cardNum < 11; cardNum++) {
         for (enum suit suit = 0; suit < SUIT_COUNT; suit++) {
             snprintf(texName, BUF_SIZE, "playing-cards/%d_of_%s.png", cardNum, suitNames[suit]);
-            cardTextures[cardNum][suit] = LoadTextureFromAndroid(assman, texName);
+            cardTextures[cardNum][suit] = LoadTexture(texName);
         }
     }
 
@@ -302,18 +246,18 @@ void loadTextures(AAssetManager *assman) {
     //     Ace
     for (int suit = 0; suit < SUIT_COUNT; suit++) {
         snprintf(texName, BUF_SIZE, "playing-cards/ace_of_%s.png", suitNames[suit]);
-        cardTextures[FACE_ACE][suit] = LoadTextureFromAndroid(assman, texName);
+        cardTextures[FACE_ACE][suit] = LoadTexture(texName);
     }
     //     Jack, Queen, King
     for (int cardNum = FACE_JACK; cardNum <= FACE_KING; cardNum++) {
         for (int suit = 0; suit < SUIT_COUNT; suit++) {
             snprintf(texName, BUF_SIZE, "playing-cards/%s_of_%s.png", faceNames[cardNum], suitNames[suit]);
             LOG_DEBUG("Trying to load tex from file: %s", texName);
-            cardTextures[cardNum][suit] = LoadTextureFromAndroid(assman, texName);
+            cardTextures[cardNum][suit] = LoadTexture(texName);
         }
     }
     //   card back
-    Image image = ImageFromAndroid(assman, "playing-cards/card_back.png");
+    Image image = LoadImage("playing-cards/card_back.png");
     cardBack = LoadTextureFromImage(image);
     card_width_px = image.width;
     card_height_px = image.height;
@@ -508,7 +452,6 @@ int main(void)
     InitWindow(0, 0, "raylib [core] example - basic window");
     SetTargetFPS(TARGET_FPS);   // Set our game to run at 60 frames-per-second
     screen_dim = CLITERAL(Vector2) {GetScreenWidth(), GetScreenHeight()};
-    struct android_app *app = GetAndroidApp();
     //--------------------------------------------------------------------------------------
 
     // Initialize game state
@@ -551,8 +494,7 @@ int main(void)
 
     // Loading Textures
     //--------------------------------------------------------------------------------------
-    AAssetManager *assman = app->activity->assetManager;
-    loadTextures(assman);
+    loadTextures();
     //--------------------------------------------------------------------------------------
 
     card_width = (1.0 - TABLEAU_PAD*6 - TABLEAU_MARGIN*2) / 7;

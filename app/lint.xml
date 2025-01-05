@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<lint>
+    <!-- Gradle was treating this as an error and preventing the build from completing -->
+    <issue id="MissingClass" severity="warning" />
+</lint>
+

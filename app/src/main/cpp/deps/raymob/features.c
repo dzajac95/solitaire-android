@@ -1,7 +1,7 @@
 /*
  *  raymob License (MIT)
  *
- *  Copyright (c) 2023 Le Juez Victor
+ *  Copyright (c) 2023-2024 Le Juez Victor
  *
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -41,36 +41,36 @@ void Vibrate(float sec)
     }
 }
 
+
+
+void StartSensorListening(void)
+{
+    jobject featuresInstance = GetFeaturesInstance();
+
+    if (featuresInstance != NULL)
+    {
+        JNIEnv* env = AttachCurrentThread();
+            jclass featuresClass = (*env)->GetObjectClass(env, featuresInstance);
+            jmethodID method = (*env)->GetMethodID(env, featuresClass, "startSensorListening", "()V");
+            (*env)->CallVoidMethod(env, featuresInstance, method);
+        DetachCurrentThread();
+    }
+}
+
+void StopSensorListening(void)
+{
+    jobject featuresInstance = GetFeaturesInstance();
+
+    if (featuresInstance != NULL)
+    {
+        JNIEnv* env = AttachCurrentThread();
+            jclass featuresClass = (*env)->GetObjectClass(env, featuresInstance);
+            jmethodID method = (*env)->GetMethodID(env, featuresClass, "stopSensorListening", "()V");
+            (*env)->CallVoidMethod(env, featuresInstance, method);
+        DetachCurrentThread();
+    }
+}
 /* ACCELEROMETER */
-
-void StartAccelerometerListening(void)
-{
-    jobject featuresInstance = GetFeaturesInstance();
-
-    if (featuresInstance != NULL)
-    {
-        JNIEnv* env = AttachCurrentThread();
-            jclass featuresClass = (*env)->GetObjectClass(env, featuresInstance);
-            jmethodID method = (*env)->GetMethodID(env, featuresClass, "startAccelerometerListening", "()V");
-            (*env)->CallVoidMethod(env, featuresInstance, method);
-        DetachCurrentThread();
-    }
-}
-
-void StopAccelerometerListening(void)
-{
-    jobject featuresInstance = GetFeaturesInstance();
-
-    if (featuresInstance != NULL)
-    {
-        JNIEnv* env = AttachCurrentThread();
-            jclass featuresClass = (*env)->GetObjectClass(env, featuresInstance);
-            jmethodID method = (*env)->GetMethodID(env, featuresClass, "stopAccelerometerListening", "()V");
-            (*env)->CallVoidMethod(env, featuresInstance, method);
-        DetachCurrentThread();
-    }
-}
-
 Vector3 GetAccelerometerAxis(void)
 {
     jobject featuresInstance = GetFeaturesInstance();
@@ -152,6 +152,92 @@ float GetAccelerometerZ(void)
 
     return 0;
 }
+
+/* GYROSCOPE */
+
+Vector3 GetGyroscopeAxis(void)
+{
+    jobject featuresInstance = GetFeaturesInstance();
+
+    if (featuresInstance != NULL)
+    {
+        JNIEnv* env = AttachCurrentThread();
+
+        jclass featuresClass = (*env)->GetObjectClass(env, featuresInstance);
+
+        jmethodID methodX = (*env)->GetMethodID(env, featuresClass, "getGyroscopeX", "()F");
+        jmethodID methodY = (*env)->GetMethodID(env, featuresClass, "getGyroscopeY", "()F");
+        jmethodID methodZ = (*env)->GetMethodID(env, featuresClass, "getGyroscopeZ", "()F");
+
+        Vector3 value = {
+                (*env)->CallFloatMethod(env, featuresInstance, methodX),
+                (*env)->CallFloatMethod(env, featuresInstance, methodY),
+                (*env)->CallFloatMethod(env, featuresInstance, methodZ)
+        };
+
+        DetachCurrentThread();
+
+        return value;
+    }
+
+    return (Vector3) {0};
+}
+
+float GetGyroscopeX(void)
+{
+    jobject featuresInstance = GetFeaturesInstance();
+
+    if (featuresInstance != NULL)
+    {
+        JNIEnv* env = AttachCurrentThread();
+        jclass featuresClass = (*env)->GetObjectClass(env, featuresInstance);
+        jmethodID method = (*env)->GetMethodID(env, featuresClass, "getGyroscopeX", "()F");
+        float value = (*env)->CallFloatMethod(env, featuresInstance, method);
+        DetachCurrentThread();
+
+        return value;
+    }
+
+    return 0;
+}
+
+float GetGyroscopeY(void)
+{
+    jobject featuresInstance = GetFeaturesInstance();
+
+    if (featuresInstance != NULL)
+    {
+        JNIEnv* env = AttachCurrentThread();
+        jclass featuresClass = (*env)->GetObjectClass(env, featuresInstance);
+        jmethodID method = (*env)->GetMethodID(env, featuresClass, "getGyroscopeY", "()F");
+        float value = (*env)->CallFloatMethod(env, featuresInstance, method);
+        DetachCurrentThread();
+
+        return value;
+    }
+
+    return 0;
+}
+
+float GetGyroscopeZ(void)
+{
+    jobject featuresInstance = GetFeaturesInstance();
+
+    if (featuresInstance != NULL)
+    {
+        JNIEnv* env = AttachCurrentThread();
+        jclass featuresClass = (*env)->GetObjectClass(env, featuresInstance);
+        jmethodID method = (*env)->GetMethodID(env, featuresClass, "getGyroscopeZ", "()F");
+        float value = (*env)->CallFloatMethod(env, featuresInstance, method);
+        DetachCurrentThread();
+
+        return value;
+    }
+
+    return 0;
+}
+
+
 
 /* SOFT KEYBOARD */
 
@@ -333,4 +419,20 @@ void SoftKeyboardEditText(char* text, unsigned int size)
     }
 
     ClearLastSoftKey();
+}
+
+/* DISPLAY MANAGER */
+
+void KeepScreenOn(bool keepOn)
+{
+    jobject featuresInstance = GetFeaturesInstance();
+
+    if (featuresInstance != NULL)
+    {
+        JNIEnv* env = AttachCurrentThread();
+        jclass featuresClass = (*env)->GetObjectClass(env, featuresInstance);
+        jmethodID method = (*env)->GetMethodID(env, featuresClass, "keepScreenOn", "(Z)V");
+        (*env)->CallVoidMethod(env, featuresInstance, method, (jboolean)keepOn);
+        DetachCurrentThread();
+    }
 }
