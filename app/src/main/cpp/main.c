@@ -47,6 +47,8 @@
 #define TALON_SPLAY 0.3f 
 #define CARD_VEL 2.0f // in % screen/s ?
 
+#define BACKGROUND_COLOR DARKGREEN
+
 enum face {
     FACE_ACE = 1,
     FACE_JACK = 11,
@@ -98,6 +100,11 @@ typedef struct {
     int count;
 } Pile;
 
+typedef struct {
+    Card *data;
+    size_t count;
+} Pile_View;
+
 void pile_append(Pile *pile, Card card) {
     assert(pile->count < 52);
     pile->cards[pile->count++] = card;
@@ -116,8 +123,7 @@ Card pile_pop(Pile *pile) {
 
 Card pile_peek(const Pile *pile) {
     assert(pile->count > 0);
-    int idx = pile->count - 1;
-    return pile->cards[idx];
+    return pile->cards[pile->count-1];
 }
 
 Card pile_first(const Pile *pile) {
@@ -132,6 +138,14 @@ void pile_split(Pile *dst, Pile *src, size_t split)
     memcpy(dst->cards, src->cards+split, count*sizeof(*src->cards));
     dst->count = count;
     src->count = split;
+}
+
+Pile_View pile_view(Pile *src, size_t start, size_t n)
+{
+    return CLITERAL(Pile_View) {
+        .data = &src->cards[start],
+        .count = n,
+    };
 }
 
 #define TABLEAU_COLS 7
@@ -155,8 +169,10 @@ typedef struct {
 static Game game = {0};
 static Texture2D cardTextures[14][4];
 static Texture2D cardBack;
+static Texture2D refreshIcon;
 static InFlightPile pile_in_flight;
 static bool in_flight = false;
+static size_t total_moves = 0;
 
 // useful global vars
 static int card_width_px;
@@ -165,6 +181,7 @@ static float card_width;
 static float card_height;
 static float card_scale;
 static Vector2 screen_dim;
+static Font font;
 
 Vector2 getFloatingPilePos(Vector2 root, size_t col) {
     return CLITERAL(Vector2) {
@@ -191,8 +208,9 @@ Vector2 getTableauPos(size_t col, size_t row)
     };
 }
 
-bool getMoveTarget(Card c, InFlightPile *in_flight)
+bool getMoveTarget(Pile_View candidate, InFlightPile *in_flight)
 {
+    Card c = candidate.data[0];
     in_flight->start_pos = c.pos;
     in_flight->t = 0.0f;
     // check if move to foundation is valid
@@ -206,7 +224,7 @@ bool getMoveTarget(Card c, InFlightPile *in_flight)
             }
         } else {
             Card last = pile_peek(p);
-            if (c.suit == last.suit && c.value == last.value + 1) {
+            if (c.suit == last.suit && c.value == last.value + 1 && candidate.count == 1) {
                 return true;
             }
         }
@@ -262,6 +280,13 @@ void loadTextures() {
     card_width_px = image.width;
     card_height_px = image.height;
     UnloadImage(image);
+
+    // refresh icon
+    image = LoadImage("refresh-page-option.png");
+    ImageResize(&image, 32, 32);
+    ImageColorInvert(&image);
+    refreshIcon = LoadTextureFromImage(image);
+    UnloadImage(image);
 }
 
 static void renderCard(Card c) {
@@ -284,15 +309,71 @@ void renderFoundation(void)
     Vector2 root_pos = {TABLEAU_MARGIN, TABLEAU_Y_START-(card_height+TABLEAU_TOP_MARGIN)};
     for (size_t i = 0; i < FOUNDATION_COLS; i++) {
         Pile *p = &game.foundation[i];
-        Vector2 placeholder_pos = {root_pos.x + i*(card_width+TABLEAU_PAD), root_pos.y};
         if (p->count > 0) {
             Card c = pile_peek(p);
             renderCard(c);
         } else {
+            Vector2 placeholder_pos = {root_pos.x + i*(card_width+TABLEAU_PAD), root_pos.y};
+            placeholder_pos = Vector2Multiply(placeholder_pos, screen_dim);
             Vector2 size = {card_width * screen_dim.x, card_height * screen_dim.y};
-            DrawRectangleV(Vector2Multiply(placeholder_pos, screen_dim), size, RED);
+            Rectangle bounds = { placeholder_pos.x, placeholder_pos.y, size.x, size.y };
+            Color bg_color = GRAY;
+            bg_color.a = 120;
+            DrawRectangleRounded(bounds, 0.1f, 32, bg_color);
         }
     }
+}
+
+static Vector2 reservePos()
+{
+    return CLITERAL(Vector2) {
+        1.0 - card_width - TABLEAU_MARGIN,
+        TABLEAU_Y_START-(card_height+TABLEAU_TOP_MARGIN)
+    };
+}
+
+static void renderReserve()
+{
+    Vector2 root = reservePos();
+    if (game.reserve.count > 0) {
+        renderCard(pile_peek(&game.reserve));
+    } else {
+        Rectangle bg_rec = {
+            .x = root.x * screen_dim.x,
+            .y = root.y * screen_dim.y,
+            .width = card_width * screen_dim.x,
+            .height = card_height * screen_dim.y,
+        };
+        Color bg_color = GRAY;
+        bg_color.a = 120;
+        DrawRectangleRounded(bg_rec, 0.1, 32, bg_color);
+        Vector2 iconSize = {
+            .x = refreshIcon.width / screen_dim.x,
+            .y = refreshIcon.height / screen_dim.y,
+        };
+        Vector2 iconPos = {
+            .x = root.x + 0.5*(card_width-iconSize.x),
+            .y = root.y + 0.5*(card_height-iconSize.y),
+        };
+        Color iconColor = RAYWHITE;
+        iconColor.a = 150;
+        DrawTextureV(refreshIcon, Vector2Multiply(iconPos, screen_dim), iconColor);
+    }
+    char textBuf[128];
+    snprintf(textBuf, sizeof textBuf, "%d", game.reserve.count);
+    float fontSize = 32;
+    float spacing = 1.0;
+    Vector2 text_size = Vector2Divide(MeasureTextEx(font, textBuf, fontSize, spacing), screen_dim);
+    Vector2 text_pos = {
+        .x = root.x + 0.5*(card_width-text_size.x),
+        .y = root.y - (text_size.y+0.005),
+    };
+    DrawTextEx(font, textBuf, Vector2Multiply(text_pos, screen_dim), fontSize, spacing, WHITE);
+}
+
+static float smoothstep(float x)
+{
+    return 3*x*x - 2*x*x*x;
 }
 
 static void update(void)
@@ -300,7 +381,7 @@ static void update(void)
     // update in-flight card positions
     if (in_flight) {
         float t_total = Vector2Distance(pile_in_flight.start_pos, pile_in_flight.end_pos) / CARD_VEL;
-        Vector2 pile_root = Vector2Lerp(pile_in_flight.start_pos, pile_in_flight.end_pos, pile_in_flight.t);
+        Vector2 pile_root = Vector2Lerp(pile_in_flight.start_pos, pile_in_flight.end_pos, smoothstep(pile_in_flight.t));
         for (size_t i = 0; i < pile_in_flight.pile.count; i++) {
             pile_in_flight.pile.cards[i].pos = CLITERAL(Vector2) {
                 .x = pile_root.x,
@@ -338,7 +419,7 @@ static void update(void)
                 };
 
                 bool pressed = IsMouseButtonPressed(0) && CheckCollisionPointRec(touch_pos, collision_box);
-                if (pressed && getMoveTarget(p->cards[j], &pile_in_flight) && p->cards[j].revealed) {
+                if (pressed && getMoveTarget(pile_view(p, j, p->count-j), &pile_in_flight) && p->cards[j].revealed) {
                     pile_split(&pile_in_flight.pile, p, j);
                     in_flight = true;
                 }
@@ -353,32 +434,36 @@ static void update(void)
         for (size_t j = 0; j < p->count; j++) {
             p->cards[j].pos = card_pos;
         }
+        if (!in_flight && p->count > 0) {
+            Rectangle collision_box = { card_pos.x, card_pos.y, card_width, card_height };
+            bool pressed = IsMouseButtonPressed(0) && CheckCollisionPointRec(touch_pos, collision_box);
+            if (pressed && getMoveTarget(pile_view(p, p->count-1, 1), &pile_in_flight)) {
+                pile_in_flight.pile.count = 0;
+                pile_append(&pile_in_flight.pile, pile_pop(p));
+                in_flight = true;
+            }
+        }
     }
 
     // update reserve
+    Vector2 reserve_pos = reservePos();
+    Rectangle collision_box = {
+        reserve_pos.x,
+        reserve_pos.y,
+        card_width,
+        card_height
+    };
     if (game.reserve.count > 0) {
-        Card c = pile_peek(&game.reserve);
-        Rectangle collision_box = {
-            c.pos.x,
-            c.pos.y,
-            card_width,
-            card_height
-        };
         if (IsMouseButtonPressed(0) && CheckCollisionPointRec(touch_pos, collision_box)) {
-            // move to talon
-            (void) pile_pop(&game.reserve);
+            Card c = pile_pop(&game.reserve);
             c.revealed = true;
             pile_append(&game.talon, c);
         }
         for (size_t i = 0; i < game.reserve.count; i++) {
-            game.reserve.cards[i].pos = CLITERAL(Vector2) {
-                1.0 - card_width - TABLEAU_MARGIN,
-                TABLEAU_Y_START-(card_height+TABLEAU_TOP_MARGIN)
-            };
+            game.reserve.cards[i].pos = reserve_pos;
             game.reserve.cards[i].revealed = false;
         }
-    } else {
-        // put everything in talon back into reserve
+    } else if (game.talon.count > 0 && IsMouseButtonPressed(0) && CheckCollisionPointRec(touch_pos, collision_box)) {
         if (game.talon.count > 0) {
             pile_split(&game.reserve, &game.talon, 0);
         }
@@ -407,10 +492,9 @@ static void update(void)
                 .height = card_height,
             };
             bool pressed = IsMouseButtonPressed(0) && CheckCollisionPointRec(touch_pos, collision_box);
-            if (pressed && getMoveTarget(c, &pile_in_flight)) {
-                (void) pile_pop(&game.talon);
+            if (pressed && getMoveTarget(pile_view(&game.talon, game.talon.count-1, 1), &pile_in_flight)) {
                 pile_in_flight.pile.count = 0;
-                pile_append(&pile_in_flight.pile, c);
+                pile_append(&pile_in_flight.pile, pile_pop(&game.talon));
                 in_flight = true;
             }
         }
@@ -419,16 +503,12 @@ static void update(void)
 
 void render(void)
 {
-    DrawText("Welcome to Solitaire!", 190, 200, 32, RAYWHITE);
-
     renderTableau();
 
     renderFoundation();
 
-    // reserve
-    if (game.reserve.count > 0) {
-        renderCard(pile_peek(&game.reserve));
-    }
+    renderReserve();
+
     // talon
     int start = game.talon.count-3;
     if (start < 0) start = 0;
@@ -452,6 +532,7 @@ int main(void)
     InitWindow(0, 0, "raylib [core] example - basic window");
     SetTargetFPS(TARGET_FPS);   // Set our game to run at 60 frames-per-second
     screen_dim = CLITERAL(Vector2) {GetScreenWidth(), GetScreenHeight()};
+    font = GetFontDefault();
     //--------------------------------------------------------------------------------------
 
     // Initialize game state
@@ -504,18 +585,13 @@ int main(void)
     int card_height_scaled = card_height_px * card_scale;
     card_height = card_height_scaled / screen_dim.y;
 
-    /* bool grabbed = false; */
-    /* int hold_frame_count = 0; */
-    /* Vector2 pos = {0.5-(card_width/2), 0.5-(card_height/2)}; */
-    /* Vector2 touch_pos; */
-
     // Main game loop
     while (!WindowShouldClose())
     {
         update();
 
         BeginDrawing();
-        ClearBackground(DARKGREEN);
+        ClearBackground(BACKGROUND_COLOR);
         render();
         EndDrawing();
     }
