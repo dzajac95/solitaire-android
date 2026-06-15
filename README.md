@@ -31,4 +31,5 @@ If you have an android device attached, you can install the APK with `./nob inst
 
 ## Credits for Assets Used
 Playing cards by Byron Knoll: http://code.google.com/p/vector-playing-cards/
+
 Refresh icons by Dave Gandy - Flaticon
