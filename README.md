@@ -1,4 +1,4 @@
-<img src="app/src/main/ic_launcher-playstore.png" alt="raymob icon" width="256" height="256">
+<img src="res/mipmap-xxxdpi/ic_launcher.png" alt="raymob icon" width="192" height="192">
 
 # Solitaire Android App
 
