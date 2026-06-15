@@ -1,3 +1,6 @@
+.env
+nob
+nob.old
 *.iml
 .gradle
 /local.properties

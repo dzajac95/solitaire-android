@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.raylib.raymob"
+    android:versionCode="1"
+    android:versionName="1.0" >
+
+    <uses-sdk android:minSdkVersion="26" />
+    <uses-feature android:glEsVersion="0x00020000" android:required="true" />
+
+    <!-- Conditionally include permission features -->
+
+    <!-- <uses-permission android:name="android.permission.INTERNET" -->
+    <!--     android:required="${FEATURE_INTERNET}" /> -->
+
+    <!-- <uses-permission android:name="android.permission.VIBRATE" -->
+    <!--     android:required="${FEATURE_VIBRATION}" /> -->
+
+    <!-- <uses-feature android:name="android.hardware.sensor.accelerometer" -->
+    <!--     android:required="${FEATURE_ACCELEROMETER}" /> -->
+
+    <!-- Application config -->
+
+    <application
+        android:allowBackup="false"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        >
+        <activity
+            android:name=".NativeLoader"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:screenOrientation="portrait" android:launchMode="singleTask"
+            android:resizeableActivity="false"
+            android:clearTaskOnLaunch="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.app.lib_name"
+                android:value="main" />
+        </activity>
+
+    </application>
+
+</manifest>
