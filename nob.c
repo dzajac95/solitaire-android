@@ -55,9 +55,14 @@ const char* java_bin(const char *tool) {
 }
 
 void cc(Cmd *cmd) {
-    cmd_append(cmd, temp_sprintf("%s/bin/aarch64-linux-android%d-clang", ndk_toolchain_path, ANDROID_TARGET_SDK));
+    cmd_append(cmd, temp_sprintf("%s/bin/clang", ndk_toolchain_path));
 }
 
+void target_flags(Cmd *cmd) {
+    cmd_append(cmd, "-mfix-cortex-a53-835769");
+    cmd_append(cmd, temp_sprintf("--target=aarch64-linux-android%d", ANDROID_MIN_SDK));
+    cmd_append(cmd, temp_sprintf("--sysroot=%s/sysroot", ndk_toolchain_path));
+}
 void ldflags(Cmd *cmd) {
     cmd_append(cmd, "-Wl,-soname,libmain.so");
     cmd_append(cmd, "-Wl,--exclude-libs,libatomic.a"); // not sure why this is needed, but it was in the raylib Makefile.Android
@@ -73,7 +78,6 @@ void ldflags(Cmd *cmd) {
     cmd_append(cmd, "-u","ANativeActivity_onCreate");
     cmd_append(cmd, "-L./build/");
     cmd_append(cmd, "-L./build/lib");
-    cmd_append(cmd, temp_sprintf("-L%s/sysroot/usr/lib", ndk_toolchain_path));
 }
 
 void includes(Cmd *cmd) {
@@ -91,7 +95,6 @@ void cflags(Cmd *cmd) {
     cmd_append(cmd, "-std=c99");
     cmd_append(cmd, "-D_GNU_SOURCE");
     cmd_append(cmd, "-DGRAPHICS_API_OPENGL_ES2");
-    cmd_append(cmd, "-mfix-cortex-a53-835769");
     cmd_append(cmd, "-ffunction-sections");
     cmd_append(cmd, "-funwind-tables");
     cmd_append(cmd, "-fstack-protector-strong");
@@ -99,8 +102,7 @@ void cflags(Cmd *cmd) {
     cmd_append(cmd, "-no-canonical-prefixes");
     cmd_append(cmd, "-DANDROID");
     cmd_append(cmd, "-DPLATFORM_ANDROID");
-    cmd_append(cmd, temp_sprintf("--target=aarch64-linux-android%d", ANDROID_MIN_SDK));
-    cmd_append(cmd, temp_sprintf("--sysroot=%s/sysroot", ndk_toolchain_path));
+    target_flags(cmd);
 }
 
 bool create_temp_project_dirs() {
@@ -303,6 +305,7 @@ bool compile_project_code(Cmd *cmd) {
         cmd_append(cmd, "-o", so_out);
         cmd_append(cmd, "build/main.o");
         cmd_append(cmd, "build/android_native_app_glue.o");
+        target_flags(cmd);
         ldflags(cmd);
         // libs
         cmd_append(cmd, "-lm", "-lc", "-llog", "-ldl");
