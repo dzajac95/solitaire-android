@@ -536,18 +536,69 @@ defer:
     return result;
 }
 
+void usage(const char *prog, FILE *out) {
+    fprintf(out, "%s [build|install|deploy]\n", prog);
+    fprintf(out, "  -h,--help   print this help\n");
+    fprintf(out, "  build       build APK [default when no arg provided]\n");
+    fprintf(out, "  install     build and install APK to connected device\n");
+    fprintf(out, "  deploy      like `install`, but also opens logcat for debugging\n");
+}
+
+typedef struct {
+    const char **items;
+    size_t count;
+    size_t capacity;
+} Arg_List;
+
+typedef struct {
+    bool help;
+    Arg_List rest;
+} Args;
+
+bool parse_args(Args *args, char **argv, int argc) {
+    while (argc) {
+        String_View arg = sv_from_cstr(*argv);
+        if (*arg.data == '-') {
+            while (arg.count && *arg.data == '-') {
+                arg.data += 1;
+                arg.count -= 1;
+            }
+            if (sv_eq(arg, sv_from_cstr("h")) || sv_eq(arg, sv_from_cstr("help"))) {
+                args->help = true;
+            } else {
+                nob_log(NOB_ERROR, "Unrecognized flag: %s\n", *argv);
+                return false;
+            }
+        } else {
+            da_append(&args->rest, *argv);
+        }
+        argc--;
+        argv++;
+    }
+    return true;
+}
+
 int main(int argc, char *argv[]) {
     NOB_GO_REBUILD_URSELF(argc, argv);
     Cmd cmd = {0};
     Procs procs = {0};
     Pipes pipes = {0};
     const char *prog = shift(argv, argc);
+    Args args = {0};
+    if (!parse_args(&args, argv, argc)) {
+        usage(prog, stderr);
+        return 1;
+    }
     if (!setup_paths()) return 1;
-    if (argc == 0) {
+    if (args.help) {
+        usage(prog, stdout);
+        return 0;
+    }
+    if (args.rest.count == 0) {
         // just do the build
         if (!build_apk(&cmd, &procs, &pipes)) return 1;
     } else {
-        const char *arg = shift(argv, argc);
+        const char *arg = shift(args.rest.items, args.rest.count);
         if (strcmp(arg, "build") == 0) {
             if (!build_apk(&cmd, &procs, &pipes)) return 1;
         } else if (strcmp(arg, "install") == 0) {
@@ -564,6 +615,10 @@ int main(int argc, char *argv[]) {
             cmd_append(&cmd, "raylib:V");
             cmd_append(&cmd, "*:S");
             if (!cmd_run(&cmd)) return 1;
+        } else {
+            fprintf(stderr, "Unrecognized command: %s\n", arg);
+            usage(prog, stderr);
+            return 1;
         }
     }
 
